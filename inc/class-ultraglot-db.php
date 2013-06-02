@@ -27,6 +27,7 @@ class UltraGlot_DB {
 	public function __construct(){
 //		$this->datetime = current_time( 'mysql' );
 		$this->create_table();
+		$this->update_row( 5, 4, 1 );
 	}
 	
 	/**
@@ -37,36 +38,33 @@ class UltraGlot_DB {
 	 * @param bool $answer True or false (if answer is correct or not)
 	 * @return bool false on failure, true if success.
 	 **/
-	public function update_row( $user_id, $post_id, $answer ) {
+	public function update_row( $group_id, $post_id, $blog_id ) {
 		global $wpdb;
 		
-		// Sanitise integers
-		$user_id = (int) $user_id;
-		$post_id = (int) $post_id;
-		
+		// Sanitise data
+		$group_id  = (int) $group_id;
+		$post_id   = (int) $post_id;
+		$blog_id   = (int) $blog_id;
+
 		// If row doesn't exist, then add it
-		$result = $this->get_row_info( $user_id, $post_id );
+		$result = $this->get_row_info( $group_id, $post_id, $blog_id );
 		if ( $result == false ) {
-			$this->add_row( $user_id, $post_id, $answer );
+			$this->add_row( $group_id, $post_id, $blog_id );
 			return;
 		}
 		
-		$times = $result->times;
-		$times++;
-		
+		$tablename = UG_TABLE_NAME;
 		// Perform the DB update
 		$result = $wpdb->update(
-			$this->get_table_name(), 
+			$tablename,
 			array(
-				'user_id' => $user_id,
-				'post_id' => $post_id,
-				'answer'  => $answer,
-				'date'    => $this->datetime,
-				'times'   => $times
+				'group_id' => $group_id,
+				'post_id'  => $post_id,
+				'blog_id'  => $blog_id,
 			),
 			array(
-				'user_id' => $user_id,
-				'post_id' => $post_id
+				'group_id' => $group_id,
+				'post_id'  => $post_id
 			)
 		);
 		
@@ -109,23 +107,7 @@ class UltraGlot_DB {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		dbDelta( $sql );
 	}
-	
-	/**
-	 * Retrieve ID for an unanswered question for a specific user
-	 *
-	 * @param int $user_id  The user id
-	 * @param int $taxonomy The taxonomy being queried
-	 * @return integer $post_id The ID of the unanswered question
-	 **/
-	public function get_unanswered_question( $user_id, $taxonomy = '' ) {
-		if ( '' == $taxonomy ) {
-			// No taxonomy set, therefore grab first random question from any taxonomy
-		}
-		
-		// COMING SOON!
-		return $post_id;
-	}
-	
+
 	/**
 	 * Retrieves row info
 	 *
@@ -134,17 +116,18 @@ class UltraGlot_DB {
 	 * @global array $wpdb The WordPress database global object
 	 * @return array of objects
 	 **/
-	public function get_row_info( $user_id, $post_id ) {
+	public function get_row_info( $group_id, $post_id, $blog_id ) {
 		global $wpdb;
 		
-		// Sanitise integers
-		$user_id = (int) $user_id;
-		$post_id = (int) $post_id;
+		// Sanitise data
+		$group_id  = (int) $group_id;
+		$post_id   = (int) $post_id;
+		$blog_id   = (int) $blog_id;
 		
 		// Process query
 		$tablename = UG_TABLE_NAME;
-		$query = "SELECT * FROM {$tablename} WHERE user_id = %d AND post_id = %s";
-		$query = $wpdb->prepare( $query, $user_id, $post_id );
+		$query = "SELECT * FROM {$tablename} WHERE group_id = %d AND post_id = %s AND blog_id = %s";
+		$query = $wpdb->prepare( $query, $group_id, $post_id, $blog_id );
 		$result = $wpdb->get_results( $query, OBJECT );
 		
 		// Taking only the most recent result (should probably be done via the query if possible)
@@ -166,23 +149,22 @@ class UltraGlot_DB {
 	 * @global array $wpdb The WordPress database global object
 	 * @return bool false on failure, true if success.
 	 **/
-	private function add_row( $user_id, $post_id, $answer ) {
+	private function add_row( $group_id, $post_id, $blog_id ) {
 		global $wpdb;
 		
 		// Sanitise data
-		$user_id  = (int) $user_id;
-		$post_id  = (int) $post_id;
-		$answer   = (bool) $answer;
+		$group_id  = (int) $group_id;
+		$post_id   = (int) $post_id;
+		$blog_id   = (int) $blog_id;
 		
 		// Perform the DB insert
+		$tablename = UG_TABLE_NAME;
 		$result = $wpdb->insert(
-			$this->get_table_name(),
+			$tablename,
 			array(
-				'user_id' => $user_id,
-				'post_id' => $post_id,
-				'answer'  => $answer,
-				'date'    => $this->datetime,
-				'times'   => 1
+				'group_id' => $group_id,
+				'post_id'  => $post_id,
+				'blog_id'  => $blog_id,
 			),
 			array(
 				'%d',
