@@ -20,7 +20,9 @@ function wpt_get_langs() {
  * @return string
  */
 function wpt_get_current_lang() {
-	return 'en_US';
+	global $blog_id;
+	$sites = get_site_option( 'ultraglot' );
+	return $sites[$blog_id];
 }
 
 /*

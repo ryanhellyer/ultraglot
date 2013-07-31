@@ -47,16 +47,20 @@ class UltraGlot_Setup extends UltraGlot_DB {
 		else
 			$post_ID = '';
 		
-			/*
-			
-		$result = $this->get_translations( $blog_id );
+		$group_id = $this->get_group_id( $post_ID, $blog_id );
+		$result = $this->get_translations( $group_id );
 		echo '<textarea>';
 		print_r( $result );
 		echo '</textarea>';
+			/*
 		*/
 		
 		$sites = get_site_option( 'ultraglot' );
 		foreach( $sites as $site_id => $language ) {
+			
+			/******** SHOULD BE PULLING FROM LANGUAGE MAPPING TABLE INSTEAD ************/
+			$current_post_ID = get_post_meta( $post_ID, 'ultraglot_language_' . $language, true );
+			
 			if ( wpt_get_current_lang() != $language ) {
 				echo '
 				<p>
@@ -68,8 +72,14 @@ class UltraGlot_Setup extends UltraGlot_DB {
 					$myposts = get_posts( $args );
 					foreach( $myposts as $post ) {
 						setup_postdata( $post );
+						if ( get_the_ID() == $current_post_ID ) {
+							$selected = ' selected="selected"';
+						} else {
+							$selected = '';
+						}
+						
 						?>
-						<option value="<?php the_id(); ?>">
+						<option<?php echo $selected; ?> value="<?php the_id(); ?>">
 							<?php the_title(); ?>
 						</option><?php
 					}
@@ -79,8 +89,6 @@ class UltraGlot_Setup extends UltraGlot_DB {
 				<?php
 			}
 		}
-		?>
-		<input type="submit" name="ultraglot_submit" value="<?php _e( 'Set language', 'ultraglot' ); ?>" /><?php
 	}
 	
 	/**
@@ -95,49 +103,28 @@ class UltraGlot_Setup extends UltraGlot_DB {
 			isset( $_POST['post_ID'] ) &&
 			isset( $_POST['ultraglot_submit'] )
 		) {
-
-
-
-
-
-echo '<textarea style="width:700px;height:400px;">';
-print_r( $_POST );
-echo '</textarea>';
-echo $blog_id . '<br />';
-$post_id = (int) $_POST['post_ID'];
-$result = $this->get_group_id( $post_id, $blog_id );
-echo '<textarea style="width:700px;height:400px;">';
-print_r( $result );
-echo '</textarea>';
-//$this->update_row( $group_id, $post_id, $blog_id ) {
-die();
-		/*
-		*/
-
-
-
-
-
-
-			foreach( $_POST['ultraglot_language'] as $key => $lang ) {
-				echo $key . ' = ' . $lang . '<br />';
-			}
-			die;
-
-			// Do nonce security check
-			wp_verify_nonce( $_POST['_wpnonce'], '_wpnonce' );
-			
-			// Grab post ID
 			$post_ID = (int) $_POST['post_ID'];
 			
-			// Sanitizing data
-			if ( isset( $_POST['_random_stuff'] ) ) {
-				$_random_stuff = esc_html( $_POST['_random_stuff'] ); // Sanitise data input
-				update_post_meta( $post_ID, '_random_stuff', $_random_stuff ); // Store the data
+			foreach( $_POST['ultraglot_language'] as $site_id => $lang_post_id ) {
+				$site_id = (int) $site_id;
+				$lang_post_id = (int) $lang_post_id;
+//				$ultraglot_language[$language]
+				update_post_meta( $post_ID, 'ultraglot_language[' . $site_id . ']', $lang_post_id ); // Store the data	
 			}
-			
 		}
-		
+		/*
+		return;
+		echo '<textarea style="width:700px;height:400px;">';
+		print_r( $_POST );
+		echo '</textarea>';
+		echo $blog_id . '<br />';
+		$post_id = (int) $_POST['post_ID'];
+		$result = $this->get_group_id( $post_id, $blog_id );
+		echo '<textarea style="width:700px;height:400px;">';
+		print_r( $result );
+		echo '</textarea>';
+		//$this->update_row( $group_id, $post_id, $blog_id ) {
+		*/
 	}
 
 }
