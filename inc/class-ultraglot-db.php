@@ -26,8 +26,57 @@ class UltraGlot_DB {
 	 */
 	public function __construct(){
 //		$this->datetime = current_time( 'mysql' );
+
 		$this->create_table();
-		$this->update_row( 5, 4, 1 );
+//		$this->update_row( 1, 1, 46 );
+	}
+	
+	public function get_translations( $group_id ) {
+		global $wpdb;
+		
+		// Sanitise data
+		$group_id   = (int) $group_id;
+
+		// Process query
+		$tablename = UG_TABLE_NAME;
+		$query = "SELECT * FROM {$tablename} WHERE group_id = %s";
+		$query = $wpdb->prepare( $query, $group_id );
+		$result = $wpdb->get_results( $query, OBJECT );
+		
+		return $result;
+	}
+	
+	/*
+	 * If we have post ID and blog ID, then work out group ID
+	 */
+	public function get_group_id( $post_id, $blog_id ) {
+		global $wpdb;
+		
+		// Sanitise data
+		$post_id   = (int) $post_id;
+		$blog_id   = (int) $blog_id;
+
+		// Process query
+		$tablename = UG_TABLE_NAME;
+		$query = "SELECT * FROM {$tablename} WHERE post_id = %d AND blog_id = %s";
+		$query = $wpdb->prepare( $query, $post_id, $blog_id );
+		$result = $wpdb->get_results( $query, OBJECT );
+		if ( isset( $result[0] ) ) {
+			$result = $result[0];
+		}
+/*		
+		// Taking only the most recent result (should probably be done via the query if possible)
+		$number = count( $result );
+		if ( $number > 0 )
+			$result = $result[$number-1];
+		else
+			$result = false;
+*/
+		if ( isset( $result->group_id ) ) {
+			return $result->group_id;
+		} else {
+			return false;
+		}
 	}
 	
 	/**
@@ -45,9 +94,9 @@ class UltraGlot_DB {
 		$group_id  = (int) $group_id;
 		$post_id   = (int) $post_id;
 		$blog_id   = (int) $blog_id;
-
+		
 		// If row doesn't exist, then add it
-		$result = $this->get_row_info( $group_id, $post_id, $blog_id );
+		$result = $this->get_row_info( $post_id, $blog_id );
 		if ( $result == false ) {
 			$this->add_row( $group_id, $post_id, $blog_id );
 			return;
@@ -64,7 +113,8 @@ class UltraGlot_DB {
 			),
 			array(
 				'group_id' => $group_id,
-				'post_id'  => $post_id
+				'post_id'  => $post_id,
+				'blog_id'  => $blog_id,
 			)
 		);
 		
@@ -116,18 +166,17 @@ class UltraGlot_DB {
 	 * @global array $wpdb The WordPress database global object
 	 * @return array of objects
 	 **/
-	public function get_row_info( $group_id, $post_id, $blog_id ) {
+	public function get_row_info( $post_id, $blog_id ) {
 		global $wpdb;
 		
 		// Sanitise data
-		$group_id  = (int) $group_id;
 		$post_id   = (int) $post_id;
 		$blog_id   = (int) $blog_id;
 		
 		// Process query
 		$tablename = UG_TABLE_NAME;
-		$query = "SELECT * FROM {$tablename} WHERE group_id = %d AND post_id = %s AND blog_id = %s";
-		$query = $wpdb->prepare( $query, $group_id, $post_id, $blog_id );
+		$query = "SELECT * FROM {$tablename} WHERE post_id = %d AND blog_id = %s";
+		$query = $wpdb->prepare( $query, $post_id, $blog_id );
 		$result = $wpdb->get_results( $query, OBJECT );
 		
 		// Taking only the most recent result (should probably be done via the query if possible)

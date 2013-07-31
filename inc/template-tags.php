@@ -1,15 +1,17 @@
 <?php
-
+wpt_get_langs();
 /*
  * Get array of possible languages
  *
  * @return array
  */
 function wpt_get_langs() {
-	return array(
-		'nb_NO',
-		'en_US',
-	);
+	$sites = get_site_option( 'ultraglot' );
+	$languages = array();
+	foreach( $sites as $language ) {
+		$languages[] = $language;
+	}
+	return $languages;
 }
 
 /*
