@@ -48,19 +48,11 @@ class UltraGlot_Setup extends UltraGlot_DB {
 			$post_ID = '';
 		
 		$group_id = $this->get_group_id( $post_ID, $blog_id );
-		$result = $this->get_translations( $group_id );
-		echo '<textarea>';
-		print_r( $result );
-		echo '</textarea>';
-			/*
-		*/
-		
 		$sites = get_site_option( 'ultraglot' );
 		foreach( $sites as $site_id => $language ) {
 			
-			/******** SHOULD BE PULLING FROM LANGUAGE MAPPING TABLE INSTEAD ************/
-			$current_post_ID = get_post_meta( $post_ID, 'ultraglot_language_' . $language, true );
-			
+			$current_post_ID = $this->get_post_id( $group_id, $site_id );
+			echo 'Group ID: ' . $group_id . '; Site ID:' . $site_id . '; Current post ID: ' . $current_post_ID . '<br>';
 			if ( wpt_get_current_lang() != $language ) {
 				echo '
 				<p>
@@ -100,31 +92,18 @@ class UltraGlot_Setup extends UltraGlot_DB {
 		// Only process if the form has actually been submitted
 		if (
 			isset( $_POST['_wpnonce'] ) &&
-			isset( $_POST['post_ID'] ) &&
-			isset( $_POST['ultraglot_submit'] )
+			isset( $_POST['post_ID'] )
 		) {
 			$post_ID = (int) $_POST['post_ID'];
+			$group_id = $this->get_group_id( $post_ID, $blog_id );
 			
 			foreach( $_POST['ultraglot_language'] as $site_id => $lang_post_id ) {
 				$site_id = (int) $site_id;
 				$lang_post_id = (int) $lang_post_id;
-//				$ultraglot_language[$language]
-				update_post_meta( $post_ID, 'ultraglot_language[' . $site_id . ']', $lang_post_id ); // Store the data	
+				$this->update_post_id( $group_id, $lang_post_id, $site_id );
+
 			}
 		}
-		/*
-		return;
-		echo '<textarea style="width:700px;height:400px;">';
-		print_r( $_POST );
-		echo '</textarea>';
-		echo $blog_id . '<br />';
-		$post_id = (int) $_POST['post_ID'];
-		$result = $this->get_group_id( $post_id, $blog_id );
-		echo '<textarea style="width:700px;height:400px;">';
-		print_r( $result );
-		echo '</textarea>';
-		//$this->update_row( $group_id, $post_id, $blog_id ) {
-		*/
 	}
 
 }

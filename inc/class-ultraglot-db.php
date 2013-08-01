@@ -28,7 +28,7 @@ class UltraGlot_DB {
 //		$this->datetime = current_time( 'mysql' );
 
 		$this->create_table();
-//		$this->update_row( 1, 1, 46 );
+//		$this->update_row( 1, 6, 45 );
 	}
 	
 	public function get_translations( $group_id ) {
@@ -55,12 +55,13 @@ class UltraGlot_DB {
 		// Sanitise data
 		$post_id   = (int) $post_id;
 		$blog_id   = (int) $blog_id;
-
+		
 		// Process query
 		$tablename = UG_TABLE_NAME;
 		$query = "SELECT * FROM {$tablename} WHERE post_id = %d AND blog_id = %s";
 		$query = $wpdb->prepare( $query, $post_id, $blog_id );
 		$result = $wpdb->get_results( $query, OBJECT );
+		
 		if ( isset( $result[0] ) ) {
 			$result = $result[0];
 		}
@@ -77,6 +78,83 @@ class UltraGlot_DB {
 		} else {
 			return false;
 		}
+	}
+	
+	/**
+	 * Get the post ID for a given group ID and blog ID
+	 *
+	 * @param int $group_id The group id
+	 * @param int $blog_id The blog id
+	 * @return int post ID
+	 **/
+	public function get_post_id( $group_id, $blog_id ) {
+		/*
+		$translations = $this->get_translations( $group_id );
+		foreach( $translations as $key => $value ) {
+			if ( $blog_id == $value->blog_id ) {
+				$post_ID = $value->post_id;
+				return $post_ID;
+			}
+		}
+*/
+
+
+		global $wpdb;
+		
+		// Sanitise data
+		$group_id   = (int) $group_id;
+		$blog_id   = (int) $blog_id;
+		
+		// Process query
+		$tablename = UG_TABLE_NAME;
+		$query = "SELECT * FROM {$tablename} WHERE group_id = %d AND blog_id = %s";
+		$query = $wpdb->prepare( $query, $group_id, $blog_id );
+		$result = $wpdb->get_results( $query, OBJECT );
+		if ( isset( $result[0] ) ) {
+			$result = $result[0];
+		}
+		
+		if ( isset( $result->post_id ) ) {
+			return $result->post_id;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Update the post ID
+	 *
+	 * @param int $group_id The group id
+	 * @param int $post_id The post id
+	 * @param int $blog_id The blog id
+	 **/
+	public function update_post_id( $group_id, $post_id, $blog_id ) {
+		global $wpdb;
+		
+		// Sanitise data
+		$group_id    = (int) $group_id;
+		$post_id     = (int) $post_id;
+		$blog_id     = (int) $blog_id;
+		$old_post_id = (int) $this->get_post_id( $group_id, $blog_id );
+		
+		// Perform the DB update
+		$result = $wpdb->update(
+			UG_TABLE_NAME,
+			array(
+				'post_id'  => $post_id,
+			),
+			array(
+				'group_id' => $group_id,
+				'post_id'  => $old_post_id, // Need old post ID to ensure that we edit the original row!
+				'blog_id'  => $blog_id,
+			)
+		);
+		
+		//Check result
+		if ( ! $result )
+			return false;
+		
+		return true;
 	}
 	
 	/**
@@ -102,10 +180,9 @@ class UltraGlot_DB {
 			return;
 		}
 		
-		$tablename = UG_TABLE_NAME;
 		// Perform the DB update
 		$result = $wpdb->update(
-			$tablename,
+			UG_TABLE_NAME,
 			array(
 				'group_id' => $group_id,
 				'post_id'  => $post_id,
@@ -153,11 +230,11 @@ class UltraGlot_DB {
 			KEY post_id (post_id),
 			KEY group_id (group_id)
 		) {$charset_collate};";
-
+		
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		dbDelta( $sql );
 	}
-
+	
 	/**
 	 * Retrieves row info
 	 *
