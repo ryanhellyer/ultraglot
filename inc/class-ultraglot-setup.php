@@ -41,18 +41,20 @@ class UltraGlot_Setup extends UltraGlot_DB {
 	public function meta_box() {
 		global $post, $blog_id;
 		
-		// 
-		if ( isset( $_GET['post'] ) )
+		// Set the current pages post ID
+		if ( isset( $_GET['post'] ) ) {
 			$post_ID = (int) $_GET['post'];
-		else
-			$post_ID = '';
+			$group_id = $this->get_group_id( $post_ID, $blog_id );
+		}
 		
-		$group_id = $this->get_group_id( $post_ID, $blog_id );
 		$sites = get_site_option( 'ultraglot' );
 		foreach( $sites as $site_id => $language ) {
 			
-			$current_post_ID = $this->get_post_id( $group_id, $site_id );
-			echo 'Group ID: ' . $group_id . '; Site ID:' . $site_id . '; Current post ID: ' . $current_post_ID . '<br>';
+			if ( isset( $group_id ) ) {
+				$current_post_ID = $this->get_post_id( $group_id, $site_id );
+			} else {
+				$current_post_ID = '';
+			}
 			if ( wpt_get_current_lang() != $language ) {
 				echo '
 				<p>
