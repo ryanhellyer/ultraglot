@@ -32,16 +32,3 @@ require( 'inc/class-ultraglot-admin.php' );
 new UltraGlot_Setup;
 new UltraGlot_Admin;
 new UltraGlot_DB;
-
-/*
-Database setup
-
-10 languages
-KEY          
-
-From Cristi
-wp_language_mapping:
-    language_group_id int(20) … arbitrary number that groups posts that have the same content, in different languages (like a pointer to a term id, without the term in the db). Not unique.
-    language_post_id int(20) … points to a blog post in a certain language
-    language_blog_id int(20) … points to the blog where the post is
-*/
