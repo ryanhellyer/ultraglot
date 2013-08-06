@@ -98,35 +98,43 @@ class UltraGlot_Setup extends UltraGlot_DB {
 		) {
 			$post_ID = (int) $_POST['post_ID'];
 			$group_id = $this->get_group_id( $post_ID, $blog_id );
-//echo '<textarea style="width:400px;height:400px;font-size:10px;">';
-//print_r( $_POST );
-//echo '</textarea>';
-//echo '|'.$group_id.', '.$post_ID.', '.$blog_id . '|';
-//echo $group_id;die;
+			
+			// If not group ID present, then we must work out an appropriate one to use
+			if ( false == $group_id ) {
+				
+				// Loop through languages trying to find a group ID to use
+				foreach( $_POST['ultraglot_language'] as $site_id => $lang_post_id ) {
+					$site_id = (int) $site_id;
+					$lang_post_id = (int) $lang_post_id;
+					
+					$group_id = $this->get_group_id( $lang_post_id, $site_id );
+					if ( false != $group_id ) {
+						continue;
+					}
+				}
+				
+				// If we still don't have a group ID, then all hope is lost and we need to resort to generating a new one
+				if ( false == $group_id ) {
+					$group_id = $this->get_new_group_id();
+				}
+				
+				// Now that we have a group ID, proceed to update the post ID
+				$this->add_group_id( $group_id, $post_ID, $blog_id );
+			}
+			
+			die( 'need to start updating the language posts now');
+			
+			// Update the posts to be translated ... 
 			foreach( $_POST['ultraglot_language'] as $site_id => $lang_post_id ) {
 				$site_id = (int) $site_id;
 				$lang_post_id = (int) $lang_post_id;
 				
-				// If group ID already set, then charge ahead
-				if ( false != $group_id ) {
-					$the_group_id = $group_id;
+				$lang_group_id = $this->get_group_id( $lang_post_id, $site_id );
+				if ( $lang_group_id != $group_id ) {
+					// TASK ................ Make sure translated post is updated here
+					$this->update_group_id( $group_id, $lang_post_id, $site_id );
 				}
-				// If no group ID set, then need to work out what the group ID is before continuing
-				else {
-					$group_id = $this->get_group_id( $lang_post_id, $blog_id );
-					if ( false != $group_id ) {
-						$the_group_id = $group_id;
-					} else {
-						// Add new group ID to this post
-						add_group_id( $post_id, $blog_id )
-					}
-					echo $the_group_id . 'x';die;
-				}
-				$this->update_post_id( $the_group_id, $lang_post_id, $site_id );
-//echo '|'.$group_id.', '.$lang_post_id.', '.$site_id . '|';
-//die;
 			}
 		}
 	}
-
 }

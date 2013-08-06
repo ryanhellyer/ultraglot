@@ -17,6 +17,15 @@ class UltraGlot_DB {
 	}
 	
 	/*
+	 * Generate a new unique group ID to use
+	 *
+	 * @return int
+	 */
+	public function get_new_group_id() {
+		return rand();
+	}
+	
+	/*
 	 * If we have post ID and blog ID, then work out group ID
 	 *
 	 * @param int $post_id The post ID
@@ -106,6 +115,42 @@ class UltraGlot_DB {
 			array(
 				'group_id' => $group_id,
 				'post_id'  => $old_post_id, // Need old post ID to ensure that we edit the original row!
+				'blog_id'  => $blog_id,
+			)
+		);
+		
+		//Check result
+		if ( ! $result )
+			return false;
+		
+		return true;
+	}
+	
+	/**
+	 * Add a group ID
+	 *
+	 * @param int $group_id The group id
+	 * @param int $post_id The post id
+	 * @param int $blog_id The blog id
+	 * @global object $wpdb The WordPress database object
+	 * @return bool True if the post was updated
+	 **/
+	public function add_group_id( $group_id, $post_id, $blog_id ) {
+		global $wpdb;
+		
+		// Sanitise data
+		$group_id    = (int) $group_id;
+		$post_id     = (int) $post_id;
+		$blog_id     = (int) $blog_id;
+		
+		// Perform the DB update
+		$result = $wpdb->update(
+			UG_TABLE_NAME,
+			array(
+				'group_id'  => $post_id,
+			),
+			array(
+				'post_id'  => $post_id, // Need old post ID to ensure that we edit the original row!
 				'blog_id'  => $blog_id,
 			)
 		);

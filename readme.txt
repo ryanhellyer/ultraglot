@@ -3,6 +3,7 @@ Problems:
 At what point is the group ID created.
 If we create the group ID when the first post is published.
 
+get_new_group_id() should work out an appropriate new ID rather than just spitting out random integers
 
 ** List of posts in meta box **
 If current post already has a group ID, then need to check if post already has a group ID - don't display if it already has one (which doesn't match the current posts group ID)
@@ -19,4 +20,3 @@ wp_language_mapping:
 
 ** Stuff to do **
 create_table() should only fire if the table doesn't exist and only in the admin panel
-
