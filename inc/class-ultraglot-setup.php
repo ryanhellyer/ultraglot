@@ -24,7 +24,7 @@ class UltraGlot_Setup extends UltraGlot_DB {
 	public function add_metabox() {
 		add_meta_box(
 			'ultraglot', // ID
-			'Translations', // Title
+			__( 'Translations', 'ultra-glot' ), // Title
 			array(
 				$this,
 				'meta_box', // Callback to method to display HTML
@@ -37,6 +37,9 @@ class UltraGlot_Setup extends UltraGlot_DB {
 	
 	/**
 	 * Output the thumbnail meta box
+	 *
+	 * @global int $post the global post object
+	 * @global int $blog_id The current blog ID
 	 */
 	public function meta_box() {
 		global $post, $blog_id;
@@ -87,8 +90,10 @@ class UltraGlot_Setup extends UltraGlot_DB {
 	
 	/**
 	 * Save opening times meta box data
+	 *
+	 * @global int $blog_id The current blog ID
 	 */
-	function meta_boxes_save() {
+	public function meta_boxes_save() {
 		global $blog_id;
 		
 		// Only process if the form has actually been submitted
@@ -122,19 +127,23 @@ class UltraGlot_Setup extends UltraGlot_DB {
 				$this->add_group_id( $group_id, $post_ID, $blog_id );
 			}
 			
-			die( 'need to start updating the language posts now');
-			
 			// Update the posts to be translated ... 
 			foreach( $_POST['ultraglot_language'] as $site_id => $lang_post_id ) {
 				$site_id = (int) $site_id;
 				$lang_post_id = (int) $lang_post_id;
+//echo $lang_post_id . ' ';
 				
 				$lang_group_id = $this->get_group_id( $lang_post_id, $site_id );
+//				echo "\nLang post ID: " . $lang_group_id . " $group_id \n";
 				if ( $lang_group_id != $group_id ) {
+//					die($lang_group_id.'x');
+					
 					// TASK ................ Make sure translated post is updated here
 					$this->update_group_id( $group_id, $lang_post_id, $site_id );
 				}
 			}
 		}
+//echo "\n\n" . $group_id . "\n\n --- ";
+//print_r( $_POST );die;
 	}
 }

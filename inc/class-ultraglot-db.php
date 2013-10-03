@@ -143,18 +143,28 @@ class UltraGlot_DB {
 		$post_id     = (int) $post_id;
 		$blog_id     = (int) $blog_id;
 		
+		// Insert the new group ID row
+		$result = $wpdb->insert(
+			UG_TABLE_NAME, // Table name
+			array(
+				'group_id'  => $group_id,
+				'post_id'   => $post_id,
+				'blog_id'   => $blog_id,
+			) // Data to be added
+		);
+		/*
 		// Perform the DB update
 		$result = $wpdb->update(
 			UG_TABLE_NAME,
 			array(
-				'group_id'  => $post_id,
+				'group_id'  => $group_id,
 			),
 			array(
 				'post_id'  => $post_id, // Need old post ID to ensure that we edit the original row!
 				'blog_id'  => $blog_id,
 			)
 		);
-		
+		*/
 		//Check result
 		if ( ! $result )
 			return false;
@@ -211,6 +221,10 @@ class UltraGlot_DB {
 		$post_id     = (int) $post_id;
 		$blog_id     = (int) $blog_id;
 		
+		$current_group_id = $this->get_group_id( $post_id, $blog_id );
+//		echo $current_group_id;
+//		die;
+		
 		// Perform the DB update
 		$result = $wpdb->update(
 			UG_TABLE_NAME,
@@ -220,8 +234,6 @@ class UltraGlot_DB {
 				'blog_id'  => $blog_id,
 			),
 			array(
-				'group_id' => $group_id,
-				'post_id'  => $post_id,
 				'blog_id'  => $blog_id,
 			)
 		);
